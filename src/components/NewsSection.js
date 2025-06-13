@@ -7,7 +7,7 @@ function NewsSection() {
     const fetchNews = async () => {
       try {
         const response = await fetch(
-          `https://newsapi.org/v2/top-headlines?country=co&language=es&pageSize=6&apiKey=${process.env.REACT_APP_NEWS_API_KEY}`
+          `https://newsapi.org/v2/top-headlines?country=us&pageSize=20&apiKey=${process.env.REACT_APP_NEWS_API_KEY}`
         );
         const data = await response.json();
         setArticles(data.articles || []);
@@ -21,7 +21,7 @@ function NewsSection() {
 
   return (
     <div className="container py-5">
-      <h2 className="text-center mb-4">Noticias Recientes en Colombia</h2>
+      <h2 className="text-center mb-4">Latest News</h2>
       <div className="row g-4">
         {articles.map((article, index) => (
           <div className="col-md-4" key={index}>
@@ -33,9 +33,9 @@ function NewsSection() {
               />
               <div className="card-body">
                 <h5 className="card-title">{article.title}</h5>
-                <p className="card-text">{article.description || 'No hay descripción disponible.'}</p>
+                <p className="card-text">{article.description || 'No description available.'}</p>
                 <a href={article.url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-                  Leer Más
+                  Read More
                 </a>
               </div>
             </div>
