@@ -1,47 +1,50 @@
 const express = require('express');
 const cors = require('cors');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const dotenv = require('dotenv');
 const swaggerUi = require('swagger-ui-express');
-const swaggerJSDoc = require('swagger-jsdoc');
-require('dotenv').config();
+const swaggerSpec = require('./swagger');
 
+dotenv.config();
 const app = express();
 app.use(cors());
-
-const swaggerSpec = swaggerJSDoc({
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'My News API Proxy',
-      version: '1.0.0',
-    },
-    servers: [{ url: 'http://localhost:3001' }],
-  },
-  apis: ['./index.js'], // where the comments live
-});
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 /**
  * @swagger
- * /news/sources:
+ * /news:
  *   get:
- *     summary: Get news sources from Colombia (via NewsAPI)
+ *     summary: Get latest U.S. news articles via NewsAPI
+ *     description: Fetches top 20 headlines from the US using NewsAPI.
  *     responses:
  *       200:
- *         description: A list of news sources
+ *         description: A list of news articles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   title:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   url:
+ *                     type: string
+ *                   urlToImage:
+ *                     type: string
  */
-app.get('/news/sources', async (req, res) => {
-  const apiKey = process.env.NEWS_API_KEY;
-  const url = `https://newsapi.org/v2/top-headlines/sources?language=es&apiKey=${apiKey}`;
-
+app.get('/news', async (req, res) => {
   try {
+    const apiKey = process.env.NEWS_API_KEY;
+    const url = `https://newsapi.org/v2/top-headlines?country=us&pageSize=20&apiKey=${apiKey}`;
     const response = await fetch(url);
     const data = await response.json();
-    const filtered = data.sources.filter((s) => s.country === 'co');
-    res.json(filtered);
+    res.json(data.articles || []);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch news' });
   }
 });
 
-app.listen(3001, () => console.log('Running on http://localhost:3001'));
+app.listen(3001, () => console.log('API running at http://localhost:3001/api-docs'));
