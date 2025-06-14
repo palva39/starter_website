@@ -5,7 +5,9 @@ import About from './components/About';
 import Services from './components/Services';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
-import NewsSection from './components/NewsSection';
+import MealViewer from './components/MealViewer';
+
+import { database } from './firebase';
 
 
 function App() {
@@ -15,7 +17,7 @@ function App() {
       <Hero />
       <About />
       <Services />
-      <NewsSection /> {/* NEW SECTION */}
+      <MealViewer />
       <Contact />
       <Footer />
     </>
