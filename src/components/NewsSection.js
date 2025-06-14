@@ -2,46 +2,80 @@ import React, { useEffect, useState } from 'react';
 
 function NewsSection() {
   const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNews = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/news');
+      const data = await response.json();
+
+      if (data.status === 'ok' && Array.isArray(data.articles)) {
+        setArticles(data.articles);
+      } else {
+        console.warn('No articles found in response:', data);
+        setArticles([]);
+      }
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      setArticles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const response = await fetch(
-          `https://newsapi.org/v2/top-headlines?country=us&pageSize=20&apiKey=${process.env.REACT_APP_NEWS_API_KEY}`
-        );
-        const data = await response.json();
-        setArticles(data.articles || []);
-      } catch (error) {
-        console.error('Error fetching news:', error);
-      }
-    };
-
     fetchNews();
   }, []);
 
   return (
-    <div className="container py-5">
-      <h2 className="text-center mb-4">Latest News</h2>
-      <div className="row g-4">
-        {articles.map((article, index) => (
-          <div className="col-md-4" key={index}>
-            <div className="card h-100 shadow-sm">
+    <div style={{ padding: '1rem' }}>
+      <h2>📰 Top Headlines</h2>
+
+      {loading ? (
+        <p>Loading news...</p>
+      ) : articles.length === 0 ? (
+        <p>No articles found.</p>
+      ) : (
+        articles.map((article, index) => (
+          <div
+            key={index}
+            style={{
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1rem',
+              maxWidth: '600px',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+            }}
+          >
+            <h3>{article.title}</h3>
+
+            {article.urlToImage && (
               <img
-                src={article.urlToImage || 'https://via.placeholder.com/400x200'}
-                className="card-img-top"
+                src={article.urlToImage}
                 alt={article.title}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  borderRadius: '6px',
+                  marginBottom: '0.5rem'
+                }}
               />
-              <div className="card-body">
-                <h5 className="card-title">{article.title}</h5>
-                <p className="card-text">{article.description || 'No description available.'}</p>
-                <a href={article.url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-                  Read More
-                </a>
-              </div>
-            </div>
+            )}
+
+            <p>{article.description}</p>
+
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#0077cc' }}
+            >
+              Read more
+            </a>
           </div>
-        ))}
-      </div>
+        ))
+      )}
     </div>
   );
 }
